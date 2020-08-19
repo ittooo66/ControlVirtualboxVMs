@@ -1,0 +1,3 @@
+# ControlVirtualboxVMs
+
+Vagrantってこんな？
