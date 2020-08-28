@@ -1,106 +1,91 @@
 @echo off
 @setlocal enabledelayedexpansion
+cd /d %~dp0
 
-rem VMå¤‰æ•°ã®ãƒ­ãƒ¼ãƒ‰
-CALL VMSetting.bat
+rem •Ï”‚Ìƒ[ƒh
+CALL Setting.bat
 
-rem ãƒãƒ¼ãƒˆç•ªå·
-set portnum=%SSH_PORTNUM%
-rem ã‚µãƒ¼ãƒå
-set /P svname="æ§‹ç¯‰ã™ã‚‹ã‚µãƒ¼ãƒåã‚’å…¥åŠ›ã—ã¦ãã ã•ã„: "
-
-echo ã‚µãƒ¼ãƒåé‡è¤‡ç¢ºèª
+rem ƒT[ƒo–¼æ“¾
+set /P svname="\’z‚·‚éƒT[ƒo–¼‚ğ“ü—Í‚µ‚Ä‚­‚¾‚³‚¢: "
+echo d•¡Šm”F...
 FOR /F %%i in ('%VBOX_MNG% list vms') do (
     set svr=%%i
 	if !svr! == "%svname%" (
-		echo ã‚µãƒ¼ãƒåï¼š!svr:~1,-1! ã¯ã™ã§ã«å­˜åœ¨ã—ã¦ã„ã¾ã™ã€‚å‡¦ç†ã‚’çµ‚äº†ã—ã¾ã™ã€‚
+		echo ƒT[ƒo–¼F!svr:~1,-1! ‚Í‚·‚Å‚É‘¶İ‚µ‚Ä‚¢‚Ü‚·Bˆ—‚ğI—¹‚µ‚Ü‚·B
 		exit /B 0
 	)
 )
-echo  â†’OK
+echo  ¨OK
 
-echo ç©ºãSSHãƒãƒ¼ãƒˆæœç´¢
+echo ‹ó‚«SSHƒ|[ƒg‘{õ
+set portnum=%SSH_PORTNUM%
 :portsearch
 	
 	set /a portnum+=1
 
-	rem Forwardè¨­å®šæ¸ˆãƒãƒ¼ãƒˆã®å­˜åœ¨ç¢ºèª
+	rem Forwardİ’èÏƒ|[ƒg‚Ì‘¶İŠm”F
 	set text=
 	for /F %%i in ('%VBOX_MNG% list vms') do (
 		for /f "tokens=* delims=" %%x in ('"%VBOX_MNG% showvminfo %%i | findstr -i NIC | findstr -i Rule | findstr -i %portnum%"') do (set text=!text!%%x^
 		)
 	)
 
-	rem è¦‹ã¤ã‹ã‚‰ãªã„å ´åˆã¯ã€å†åº¦ãƒãƒ¼ãƒˆãƒã‚§ãƒƒã‚¯
+	rem Œ©‚Â‚©‚ç‚È‚¢ê‡‚ÍAÄ“xƒ|[ƒgƒ`ƒFƒbƒN
 	if not "!text:~0,1!" == "~0,1" (
 		goto:portsearch
 	)
-echo  â†’OK
+echo  ¨OK
 
-echo ä»¥ä¸‹ã®æƒ…å ±ã§VMã‚’æ§‹ç¯‰ã—ã¾ã™ã€‚ã‚ˆã‚ã—ã„ã§ã—ã‚‡ã†ã‹
-echo   VMåç§°                    :%svname%
-echo   SSHãƒãƒ¼ãƒˆ                 :%portnum%
-echo   ãƒ†ãƒ³ãƒ—ãƒ¬ãƒ¼ãƒˆVM            :%TEMPLATE_VM%
-echo   VMä½œæˆå…ˆ                  :%VM_DEST%
-echo   å…±æœ‰ãƒ•ã‚©ãƒ«ãƒ€              :%SF_DEST%
+echo ˆÈ‰º‚Ìî•ñ‚ÅVM‚ğ\’z‚µ‚Ü‚·B‚æ‚ë‚µ‚¢‚Å‚µ‚å‚¤‚©
+echo   VM–¼Ì                    :%svname%
+echo   SSHƒ|[ƒg                 :%portnum%
+echo   ƒeƒ“ƒvƒŒ[ƒgVM            :%TEMPLATE_VM%
+echo   VMì¬æ                  :%VM_DEST%
+echo   ‹¤—LƒtƒHƒ‹ƒ_              :%SF_DEST%
 
-SET /P ans="ï¼ˆY/Nï¼‰ï¼Ÿ"
+SET /P ans="iY/NjH"
 if /i not "%ans%"=="Y" (
-	echo çµ‚äº†ã—ã¾ã™
+	echo I—¹‚µ‚Ü‚·
 	exit /B 0
 )
 
-echo VMã‚¤ãƒ³ãƒãƒ¼ãƒˆ
+echo VMƒCƒ“ƒ|[ƒg
 %VBOX_MNG% import %TEMPLATE_VM% --vsys 0 --vmname %svname% --settingsfile %VM_DEST%\%svname%\%svname%.vbox --unit 13 --disk %VM_DEST%\%svname%\%svname%.vdi
-if %errorlevel% neq 0 (
-  echo ã‚¨ãƒ©ãƒ¼ï¼šerrorlevel:%errorlevel%
-  echo å‡¦ç†ã‚’ä¸­æ–­ã—ã¾ã™
-  exit /B 0
-)
-echo  â†’OK
+call :cmdcheck
 
-echo å…±æœ‰ãƒ•ã‚©ãƒ«ãƒ€ä½œæˆ
+echo ‹¤—LƒtƒHƒ‹ƒ_ì¬
 mkdir %SF_DEST%\%svname%
-echo  â†’OK
+call :cmdcheck
 
-echo å…±æœ‰ãƒ•ã‚©ãƒ«ãƒ€è¨­å®š
+echo ‹¤—LƒtƒHƒ‹ƒ_İ’è
 %VBOX_MNG% sharedfolder add %svname% --name %svname% --hostpath "%SF_DEST%\%svname%" --automount --auto-mount-point "/sf"
-if %errorlevel% neq 0 (
-  echo ã‚¨ãƒ©ãƒ¼ï¼šerrorlevel:%errorlevel%
-  echo å‡¦ç†ã‚’ä¸­æ–­ã—ã¾ã™
-  exit /B 0
-)
-echo  â†’OK
+call :cmdcheck
 
-echo NATé€éãƒ¢ãƒ¼ãƒ‰è¨­å®š
+echo NAT“§‰ßƒ‚[ƒhİ’è
 %VBOX_MNG% modifyvm %svname% --nataliasmode1 proxyonly
-if %errorlevel% neq 0 (
-  echo ã‚¨ãƒ©ãƒ¼ï¼šerrorlevel:%errorlevel%
-  echo å‡¦ç†ã‚’ä¸­æ–­ã—ã¾ã™
-  exit /B 0
-)
-echo  â†’OK
+call :cmdcheck
 
-echo VMèµ·å‹•
+echo VM‹N“®
 %VBOX_MNG% startvm %svname% --type headless
-if %errorlevel% neq 0 (
-  echo ã‚¨ãƒ©ãƒ¼ï¼šerrorlevel:%errorlevel%
-  echo å‡¦ç†ã‚’ä¸­æ–­ã—ã¾ã™
-  exit /B 0
-)
-echo  â†’OK
+call :cmdcheck
 
-echo SSHãƒãƒ¼ãƒˆãƒ•ã‚©ãƒ¯ãƒ¼ãƒ‰è¨­å®š
+echo SSHƒ|[ƒgƒtƒHƒ[ƒhİ’è
 %VBOX_MNG% controlvm %svname% natpf1 "SSH Port,tcp,,%portnum%,,22"
+call :cmdcheck
+
+echo ssh_config setting
+call ReloadSSHConfig.bat
+
+echo hostname setting (waiting 30sec for starting sshd...)
+timeout 30
+ssh %svname% "hostnamectl set-hostname %svname%"
+call :cmdcheck
+
+SET /P TASK_END="Environment setup is complete. Please 'ssh %svname%' to login Server."
+exit /b
+:cmdcheck
 if %errorlevel% neq 0 (
-  echo ã‚¨ãƒ©ãƒ¼ï¼šerrorlevel:%errorlevel%
-  echo å‡¦ç†ã‚’ä¸­æ–­ã—ã¾ã™
-  exit /B 0
+  set /P ERROR="ERROR : errorlevel:%errorlevel%. Please check log and enter something to continue."
 )
-echo  â†’OK
-
-echo ssh_configè¨­å®š
-CALL ReloadSSHConfig.bat
-
-
-echo ç’°å¢ƒæ§‹ç¯‰ãŒå®Œäº†ã—ã¾ã—ãŸã€‚ã€Œ ssh %svname% ã€ã§ãƒ­ã‚°ã‚ªãƒ³å¯èƒ½ã§ã™ã€‚
+echo Done.
+exit /b
